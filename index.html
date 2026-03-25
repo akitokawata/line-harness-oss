@@ -80,17 +80,15 @@
   /* ===== FLOATING CTA ===== */
   .float-cta {
     position: fixed;
-    bottom: 56px; /* Clear X/LINE in-app browser bottom toolbar */
-    left: 12px;
-    right: 12px;
+    bottom: 0;
+    left: 0;
+    right: 0;
     z-index: 1000;
-    background: rgba(5, 10, 8, 0.95);
+    background: rgba(5, 10, 8, 0.92);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(6, 199, 85, 0.2);
-    border-radius: 16px;
+    border-top: 1px solid rgba(6, 199, 85, 0.2);
     padding: 12px 20px;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -652,6 +650,16 @@
     .comp-table th, .comp-table td { padding: 8px 6px; }
     .benefit-item { flex-direction: column; gap: 10px; }
     .feature-map { padding: 20px; }
+    /* In-app browser (X/LINE) bottom bar avoidance — mobile only */
+    .float-cta {
+      bottom: 56px;
+      left: 12px;
+      right: 12px;
+      border-top: none;
+      border: 1px solid rgba(6, 199, 85, 0.2);
+      border-radius: 16px;
+      background: rgba(5, 10, 8, 0.95);
+    }
   }
 
 

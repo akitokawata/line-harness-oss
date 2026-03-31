@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 
 import Link from 'next/link'
-import type { Scenario, ScenarioStep, ScenarioTriggerType, MessageType } from '@line-crm/shared'
+import type { Scenario, ScenarioStep, ScenarioTriggerType, MessageType, Tag } from '@line-crm/shared'
 import { api } from '@/lib/api'
 import Header from '@/components/layout/header'
 import FlexPreviewComponent from '@/components/flex-preview'
@@ -82,8 +82,15 @@ export default function ScenarioDetailClient({ scenarioId }: { scenarioId: strin
   const [error, setError] = useState('')
 
   const [editing, setEditing] = useState(false)
-  const [editForm, setEditForm] = useState({ name: '', description: '', triggerType: 'friend_add' as ScenarioTriggerType, isActive: true })
+  const [editForm, setEditForm] = useState({ name: '', description: '', triggerType: 'friend_add' as ScenarioTriggerType, triggerTagId: null as string | null, isActive: true })
   const [saving, setSaving] = useState(false)
+  const [tags, setTags] = useState<Tag[]>([])
+
+  useEffect(() => {
+    api.tags.list().then((res) => {
+      if (res.success) setTags(res.data)
+    })
+  }, [])
 
   const [showStepForm, setShowStepForm] = useState(false)
   const [editingStepId, setEditingStepId] = useState<string | null>(null)
@@ -102,6 +109,7 @@ export default function ScenarioDetailClient({ scenarioId }: { scenarioId: strin
           name: res.data.name,
           description: res.data.description ?? '',
           triggerType: res.data.triggerType,
+          triggerTagId: res.data.triggerTagId ?? null,
           isActive: res.data.isActive,
         })
       } else {
@@ -126,6 +134,7 @@ export default function ScenarioDetailClient({ scenarioId }: { scenarioId: strin
         name: editForm.name,
         description: editForm.description || null,
         triggerType: editForm.triggerType,
+        triggerTagId: editForm.triggerType === 'tag_added' ? editForm.triggerTagId : null,
         isActive: editForm.isActive,
       })
       if (res.success) {
@@ -286,13 +295,28 @@ export default function ScenarioDetailClient({ scenarioId }: { scenarioId: strin
               <select
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
                 value={editForm.triggerType}
-                onChange={(e) => setEditForm({ ...editForm, triggerType: e.target.value as ScenarioTriggerType })}
+                onChange={(e) => setEditForm({ ...editForm, triggerType: e.target.value as ScenarioTriggerType, triggerTagId: e.target.value === 'tag_added' ? editForm.triggerTagId : null })}
               >
                 {triggerOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
             </div>
+            {editForm.triggerType === 'tag_added' && (
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">対象タグ</label>
+                <select
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+                  value={editForm.triggerTagId ?? ''}
+                  onChange={(e) => setEditForm({ ...editForm, triggerTagId: e.target.value || null })}
+                >
+                  <option value="">タグを選択してください</option>
+                  {tags.map((tag) => (
+                    <option key={tag.id} value={tag.id}>{tag.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -319,6 +343,7 @@ export default function ScenarioDetailClient({ scenarioId }: { scenarioId: strin
                     name: scenario.name,
                     description: scenario.description ?? '',
                     triggerType: scenario.triggerType,
+                    triggerTagId: scenario.triggerTagId ?? null,
                     isActive: scenario.isActive,
                   })
                 }}

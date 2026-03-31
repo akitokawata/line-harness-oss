@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import type { Scenario, ScenarioTriggerType } from '@line-crm/shared'
+import type { Scenario, ScenarioTriggerType, Tag } from '@line-crm/shared'
 import { api } from '@/lib/api'
 import { useAccount } from '@/contexts/account-context'
 import Header from '@/components/layout/header'
@@ -59,6 +59,13 @@ export default function ScenariosPage() {
   })
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
+  const [tags, setTags] = useState<Tag[]>([])
+
+  useEffect(() => {
+    api.tags.list().then((res) => {
+      if (res.success) setTags(res.data)
+    })
+  }, [])
 
   const loadScenarios = useCallback(async () => {
     setLoading(true)
@@ -187,6 +194,21 @@ export default function ScenariosPage() {
                 ))}
               </select>
             </div>
+            {form.triggerType === 'tag_added' && (
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">対象タグ <span className="text-red-500">*</span></label>
+                <select
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+                  value={form.triggerTagId}
+                  onChange={(e) => setForm({ ...form, triggerTagId: e.target.value })}
+                >
+                  <option value="">タグを選択してください</option>
+                  {tags.map((tag) => (
+                    <option key={tag.id} value={tag.id}>{tag.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"
